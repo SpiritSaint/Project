@@ -23,4 +23,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: ${{ startsWith(github.ref, 'refs/tags/v') == true }}
-          tags: zentrackspa/project:${{ github.ref_name }} zentrackspa/project:latest
+          tags: zentrackspa/project:${{ github.ref_name }},zentrackspa/project:latest
