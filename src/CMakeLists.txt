@@ -3,4 +3,11 @@ project(app)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(app main.cpp)
+find_package(Boost 1.83.0 REQUIRED COMPONENTS headers thread program_options json)
+find_package(Threads REQUIRED)
+find_package(OpenSSL REQUIRED)
+
+add_executable(app ext/mysql.cpp main.cpp)
+target_link_libraries(app PRIVATE Boost::headers Boost::json Boost::program_options Threads::Threads OpenSSL::Crypto OpenSSL::SSL)
+
+target_compile_definitions(app PRIVATE BOOST_MYSQL_SEPARATE_COMPILATION)
