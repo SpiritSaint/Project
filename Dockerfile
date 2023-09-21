@@ -8,8 +8,8 @@ RUN mkdir build && \
     cd build && \
     make && \
     mv app /usr/bin/app && \
-        rm /src -Rf
+    mv test /usr/bin/app-test
 
-RUN app
+RUN app-test
 
 ENTRYPOINT ["/usr/bin/app"]
