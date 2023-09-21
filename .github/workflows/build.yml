@@ -20,14 +20,14 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PERSONAL_ACCESS_TOKEN }}
       -
         name: Build
-        if: !startsWith(github.ref, 'refs/tags/v')
+        if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
         uses: docker/build-push-action@v5
         with:
           push: false
           tags: zentrackspa/project:github-action
       -
         name: Build and push
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ startsWith(github.ref, 'refs/tags/v') == true }}
         uses: docker/build-push-action@v5
         with:
           push: true
