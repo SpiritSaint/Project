@@ -3,7 +3,7 @@ project(app)
 
 set(CMAKE_CXX_STANDARD 23)
 set(LIBRARIES Boost::headers Boost::json Boost::program_options Threads::Threads OpenSSL::Crypto OpenSSL::SSL)
-set(SOURCE ext/mysql.cpp)
+set(SOURCE ext/mysql.cpp ext/dotenv.h)
 
 find_package(Boost 1.83.0 REQUIRED COMPONENTS headers thread program_options json)
 find_package(Threads REQUIRED)

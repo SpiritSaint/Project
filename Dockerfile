@@ -5,11 +5,11 @@ COPY src .
 
 RUN mkdir build && \
     cmake -B build/ -S . && \
+    cp .env.example /src/build/.env && \
     cd build && \
-    make && \
-    mv app /usr/bin/app && \
-    mv test /usr/bin/app-test
+    make
 
-RUN app-test
+WORKDIR /src/build
+RUN ./test
 
-ENTRYPOINT ["/usr/bin/app"]
+ENTRYPOINT ["./app"]
