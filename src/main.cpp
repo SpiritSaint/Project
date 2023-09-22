@@ -13,13 +13,16 @@ int main(int argc, char *argv[]) {
     boost::program_options::notify(program_options);
 
     auto _configuration = std::make_shared<configuration>();
-    auto _state = std::make_shared<state>();
+    auto _state = std::make_shared<state>(_configuration);
 
     program_description.add_options()
-            ("public_key", boost::program_options::value<std::string>(&_configuration->_keys._public), "Public Key as PEM \n(string, default=public.pem)")
-            ("private_key", boost::program_options::value<std::string>(&_configuration->_keys._public), "Private Key as PEM \n(string, default=private.pem)")
-            ("dh_params", boost::program_options::value<std::string>(&_configuration->_keys._public), "DH Params as PEM \n(string, default=dh-params.pem)")
-            ("env_file", boost::program_options::value<std::string>(&_configuration->_keys._public), "DotEnv file \n(string, default=.env)");
+            ("public_key", boost::program_options::value<std::string>(&_configuration->_keys._public), "Public key as PEM \n(string, default=public.pem)")
+            ("private_key", boost::program_options::value<std::string>(&_configuration->_keys._public), "Private key as PEM \n(string, default=private.pem)")
+            ("chained_key", boost::program_options::value<std::string>(&_configuration->_keys._chained), "Chained key as PEM \n(string, default=chained.pem)")
+            ("key_size", boost::program_options::value<int>(&_configuration->_keys._size), "Key size \n(number, default=2048)")
+            ("dh_params", boost::program_options::value<std::string>(&_configuration->_keys._public), "Diffie Hellman as PEM \n(string, default=dh-params.pem)")
+            ("env_file", boost::program_options::value<std::string>(&_configuration->_keys._public), "DotEnv file \n(string, default=.env)")
+            ("serve", boost::program_options::value<uint16_t>(&_configuration->_ports._serve), "HTTP/WSS port \n(number, default=443)");
 
     _configuration->init(program_options);
 

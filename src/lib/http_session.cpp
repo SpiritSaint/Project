@@ -47,9 +47,9 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         std::shared_ptr<state> const & state,
         boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>&& req)
 {
-    auto const bad_request = [&req] (boost::beast::string_view why) {
+    auto const bad_request = [&] (boost::beast::string_view why) {
         boost::beast::http::response<boost::beast::http::string_body> res { boost::beast::http::status::bad_request, req.version() };
-        res.set(boost::beast::http::field::server, "Project");
+        res.set(boost::beast::http::field::server, state->_config->_http.server_name.c_str());
         res.set(boost::beast::http::field::content_type, "text/html");
         res.keep_alive(req.keep_alive());
         res.body() = std::string(why);
@@ -57,9 +57,9 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         return res;
     };
 
-    auto const not_found = [&req] (boost::beast::string_view target) {
+    auto const not_found = [&] (boost::beast::string_view target) {
         boost::beast::http::response<boost::beast::http::string_body> res { boost::beast::http::status::not_found, req.version() };
-        res.set(boost::beast::http::field::server, "Project");
+        res.set(boost::beast::http::field::server, state->_config->_http.server_name.c_str());
         res.set(boost::beast::http::field::content_type, "text/html");
         res.keep_alive(req.keep_alive());
         res.body() = "The resource '" + std::string(target) + "' was not found.";
@@ -67,9 +67,9 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         return res;
     };
 
-    auto const server_error = [&req] (boost::beast::string_view what) {
+    auto const server_error = [&] (boost::beast::string_view what) {
         boost::beast::http::response<boost::beast::http::string_body> res { boost::beast::http::status::internal_server_error, req.version() };
-        res.set(boost::beast::http::field::server, "Project");
+        res.set(boost::beast::http::field::server, state->_config->_http.server_name.c_str());
         res.set(boost::beast::http::field::content_type, "text/html");
         res.keep_alive(req.keep_alive());
         res.body() = "An error occurred: '" + std::string(what) + "'";
@@ -102,7 +102,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
 
     if (req.method() == boost::beast::http::verb::head) {
         boost::beast::http::response<boost::beast::http::empty_body> res{boost::beast::http::status::ok, req.version()};
-        res.set(boost::beast::http::field::server, "Project");
+        res.set(boost::beast::http::field::server, state->_config->_http.server_name.c_str());
         res.set(boost::beast::http::field::content_type, mime_type(path));
         res.set(boost::beast::http::field::access_control_allow_origin, "*");
         res.set(boost::beast::http::field::access_control_allow_methods, "HEAD");
@@ -113,7 +113,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
     }
 
     boost::beast::http::response<boost::beast::http::file_body> res { std::piecewise_construct, std::make_tuple(std::move(body)), std::make_tuple(boost::beast::http::status::ok, req.version()) };
-    res.set(boost::beast::http::field::server, "Project");
+    res.set(boost::beast::http::field::server, state->_config->_http.server_name.c_str());
     res.set(boost::beast::http::field::content_type, mime_type(path));
     res.set(boost::beast::http::field::access_control_allow_origin, "*");
     res.set(boost::beast::http::field::access_control_allow_methods, "GET, POST, OPTIONS, PUT, PATCH, DELETE");
@@ -128,7 +128,7 @@ http_session::http_session(boost::asio::ip::tcp::socket socket, boost::asio::ssl
 }
 
 void http_session::run() {
-    boost::beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(60));
+    boost::beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(_state->_config->_http.handshake_timeout));
     _stream.async_handshake(boost::asio::ssl::stream_base::server, boost::beast::bind_front_handler(& http_session::on_handshake, shared_from_this()));
 }
 
@@ -175,13 +175,13 @@ void http_session::on_handshake(boost::system::error_code error) {
 
 void http_session::do_read() {
     _req = {};
-    boost::beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(60));
+    boost::beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(_state->_config->_http.read_timeout));
     boost::beast::http::async_read(_stream, _buffer, _req, boost::beast::bind_front_handler(& http_session::on_read, shared_from_this()));
 }
 
 void http_session::do_close() {
     boost::system::error_code error;
-    boost::beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(60));
+    boost::beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(_state->_config->_http.close_timeout));
     _stream.handshake(boost::asio::ssl::stream_base::client, error);
     _stream.async_shutdown(boost::beast::bind_front_handler(& http_session::on_shutdown, shared_from_this()));
 }
