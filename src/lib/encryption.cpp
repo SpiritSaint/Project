@@ -7,17 +7,37 @@ std::string encryption::hide(std::string & input) {
         EVP_PKEY_CTX_free(_public_key_context);
     }
 
-    std::size_t size;
-    if (EVP_PKEY_encrypt_init(_public_key_context) <= 0 ||
-        EVP_PKEY_encrypt(_public_key_context, nullptr, &size, reinterpret_cast<const unsigned char *>(input.data()), input.length()) <= 0) {
-        EVP_PKEY_CTX_free(_public_key_context);
+    std::vector<std::string> blocks;
+    for (size_t i = 0; i < input.length(); i += block_size) {
+        blocks.push_back(input.substr(i, block_size));
+    }
+
+    if (EVP_PKEY_encrypt_init(_public_key_context) <= 0 ) {
         throw EncryptionException();
     }
 
-    unsigned char output[size];
-    EVP_PKEY_encrypt(_public_key_context, output, &size, reinterpret_cast<const unsigned char *>(input.data()), input.length());
+    if (EVP_PKEY_CTX_set_rsa_padding(_public_key_context, RSA_PKCS1_OAEP_PADDING) <= 0) {
+        throw EncryptionException();
+    }
+
+    std::string result;
+
+    for (const std::string& block : blocks) {
+        std::size_t size;
+        if (EVP_PKEY_encrypt(_public_key_context, nullptr, &size, reinterpret_cast<const unsigned char *>(block.data()), block.length()) <= 0) {
+            EVP_PKEY_CTX_free(_public_key_context);
+            throw EncryptionException();
+        }
+
+        unsigned char output[size];
+        EVP_PKEY_encrypt(_public_key_context, output, &size, reinterpret_cast<const unsigned char *>(block.data()), block.length());
+
+        result.append(std::string { reinterpret_cast<char*>(output), size });
+        result.append("<EOL>");
+    }
     EVP_PKEY_CTX_free(_public_key_context);
-    return std::string { reinterpret_cast<char*>(output), size };
+
+    return result;
 }
 
 std::string encryption::show(std::string & input) {
@@ -26,17 +46,41 @@ std::string encryption::show(std::string & input) {
         EVP_PKEY_CTX_free(_private_key_context);
     }
 
-    std::size_t size;
-    if (EVP_PKEY_decrypt_init(_private_key_context) <= 0 ||
-        EVP_PKEY_decrypt(_private_key_context, nullptr, &size, reinterpret_cast<const unsigned char *>(input.data()), input.length()) <= 0) {
-        EVP_PKEY_CTX_free(_private_key_context);
+    if (EVP_PKEY_decrypt_init(_public_key_context) <= 0 ) {
         throw DecryptionException();
     }
 
-    unsigned char output[size];
-    EVP_PKEY_decrypt(_private_key_context, output, &size, reinterpret_cast<const unsigned char *>(input.data()), input.length());
+    if (EVP_PKEY_CTX_set_rsa_padding(_private_key_context, RSA_PKCS1_OAEP_PADDING) <= 0) {
+        throw DecryptionException();
+    }
+
+    std::istringstream ss(input);
+
+    std::string result;
+    std::vector<std::string> blocks;
+
+    size_t position = 0;
+    std::string delimiter = "<EOL>";
+    while ((position = input.find(delimiter)) != std::string::npos) {
+        std::string block = input.substr(0, position);
+        input.erase(0, position + delimiter.length());
+
+        std::size_t size;
+
+        if (EVP_PKEY_decrypt(_private_key_context, nullptr, &size, reinterpret_cast<const unsigned char *>(block.data()), block.length()) <= 0) {
+            EVP_PKEY_CTX_free(_private_key_context);
+            throw DecryptionException();
+        }
+
+        unsigned char output[size];
+        EVP_PKEY_decrypt(_private_key_context, output, &size, reinterpret_cast<const unsigned char *>(block.data()), block.length());
+
+        result.append(std::string { reinterpret_cast<char*>(output), size });
+    }
+
     EVP_PKEY_CTX_free(_private_key_context);
-    return std::string { reinterpret_cast<char*>(output), size };
+
+    return result;
 }
 
 encryption::encryption(std::shared_ptr<configuration> const& config) {
@@ -61,6 +105,8 @@ encryption::encryption(std::shared_ptr<configuration> const& config) {
     if (!_private_key) {
         throw PrivateKeyInvalidException();
     }
+
+    block_size = (config->_keys._size / 8) - 42;
 }
 
 encryption::~encryption() {
