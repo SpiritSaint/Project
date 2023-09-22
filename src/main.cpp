@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     boost::asio::ssl::context secure_context { boost::asio::ssl::context::tlsv12 };
     secure_context.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::single_dh_use);
-    secure_context.use_certificate_chain_file(_configuration->_keys._public);
+    secure_context.use_certificate_chain_file(_configuration->_keys._chained);
     secure_context.use_private_key_file(_configuration->_keys._private, boost::asio::ssl::context::pem);
     secure_context.use_tmp_dh_file(_configuration->_keys._dh_params);
 
