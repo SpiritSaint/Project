@@ -1,15 +1,7 @@
 #include <iostream>
-#include <boost/program_options.hpp>
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/ssl.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/asio/ssl/stream.hpp>
-#include <boost/config.hpp>
 
 #include "ext/dotenv.h"
+#include "ext/boost.h"
 #include "lib/configuration.h"
 #include "lib/http_listener.h"
 #include "lib/state.h"
