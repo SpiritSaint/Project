@@ -19,9 +19,9 @@ TEST_CASE( "DotEnv", "[dotenv]" ) {
 TEST_CASE( "Encryption", "[encryption]" ) {
     auto config = std::make_shared<configuration>();
 
-    config->_keys._public = "public.pem";
-    config->_keys._private = "private.pem";
-    config->_keys._size = 2048;
+    config->_rsa._public_key = "public.pem";
+    config->_rsa._private_key = "private.pem";
+    config->_rsa._size = 2048;
 
     auto encryptor = new encryption(config);
 
