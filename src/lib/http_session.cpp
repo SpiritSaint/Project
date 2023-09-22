@@ -49,21 +49,6 @@ void print(boost::beast::http::request<Body, boost::beast::http::basic_fields<Al
     std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(req.method()) << " " << req.target() << RESET << separator << BOLD_CYAN << result << RESET << std::endl;
 }
 
-template <class Body, class Allocator>
-void http_log(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, boost::beast::http::response<boost::beast::http::string_body> res) {
-    print(req, res.result_int());
-}
-
-template <class Body, class Allocator>
-void http_log(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, boost::beast::http::response<boost::beast::http::empty_body> res) {
-    print(req, res.result_int());
-}
-
-template <class Body, class Allocator>
-void http_log(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, boost::beast::http::response<boost::beast::http::file_body> & res) {
-    print(req, res.result_int());
-}
-
 template <class Body, class Allocator> boost::beast::http::message_generator handle_request(
         std::shared_ptr<state> const & state,
         boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>&& req)
@@ -75,7 +60,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.keep_alive(req.keep_alive());
         res.body() = std::string(why);
         res.prepare_payload();
-        http_log(req, res);
+        print(req, res.result_int());
         return res;
     };
 
@@ -87,7 +72,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.body() = "The resource '" + std::string(target) + "' was not found.";
         res.prepare_payload();
         res.payload_size();
-        http_log(req, res);
+        print(req, res.result_int());
         return res;
     };
 
@@ -98,7 +83,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.keep_alive(req.keep_alive());
         res.body() = "An error occurred: '" + std::string(what) + "'";
         res.prepare_payload();
-        http_log(req, res);
+        print(req, res.result_int());
         return res;
     };
 
@@ -131,7 +116,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.set(boost::beast::http::field::access_control_allow_headers, "*");
         res.content_length(size);
         res.keep_alive(req.keep_alive());
-        http_log(req, res);
+        print(req, res.result_int());
         return res;
     }
 
@@ -143,7 +128,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
     res.set(boost::beast::http::field::access_control_allow_headers, "*");
     res.content_length(size);
     res.keep_alive(req.keep_alive());
-    http_log(req, res);
+    print(req, res.result_int());
     return res;
 }
 
