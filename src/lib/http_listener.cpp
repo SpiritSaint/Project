@@ -53,6 +53,4 @@ void http_listener::on_accept(boost::system::error_code error) {
 void http_listener::fail(boost::system::error_code error, char const * what) {
     if(error == boost::asio::error::operation_aborted)
         return;
-
-    std::cout << "error::http_listener: " << what << std::endl;
 }
