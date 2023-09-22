@@ -16,26 +16,27 @@ int main(int argc, char *argv[]) {
     auto _state = std::make_shared<state>(_configuration);
 
     program_description.add_options()
-            ("public_key", boost::program_options::value<std::string>(&_configuration->_keys._public), "Public key as PEM \n(string, default=public.pem)")
-            ("private_key", boost::program_options::value<std::string>(&_configuration->_keys._public), "Private key as PEM \n(string, default=private.pem)")
-            ("chained_key", boost::program_options::value<std::string>(&_configuration->_keys._chained), "Chained key as PEM \n(string, default=chained.pem)")
-            ("key_size", boost::program_options::value<int>(&_configuration->_keys._size), "Key size \n(number, default=2048)")
-            ("dh_params", boost::program_options::value<std::string>(&_configuration->_keys._public), "Diffie Hellman as PEM \n(string, default=dh-params.pem)")
-            ("env_file", boost::program_options::value<std::string>(&_configuration->_keys._public), "DotEnv file \n(string, default=.env)")
-            ("serve", boost::program_options::value<uint16_t>(&_configuration->_ports._serve), "HTTP/WSS port \n(number, default=443)");
+            ("encryption_rsa_public_key", boost::program_options::value<std::string>(&_configuration->_rsa._public_key), "RSA Public key file \n(string, default=public.pem)")
+            ("encryption_rsa_private_key", boost::program_options::value<std::string>(&_configuration->_rsa._private_key), "RSA Private key file \n(string, default=private.pem)")
+            ("encryption_rsa_chained_key", boost::program_options::value<std::string>(&_configuration->_rsa._chained_key), "RSA Chained key file \n(string, default=chained.pem)")
+            ("encryption_rsa_dh_params", boost::program_options::value<std::string>(&_configuration->_rsa._dh_params), "DH Parameters file \n(string, default=dh-params.pem)")
+            ("encryption_rsa_size", boost::program_options::value<size_t>(&_configuration->_rsa._size), "RSA key size \n(number, default=2048)")
+            ("environment", boost::program_options::value<std::string>(&_configuration->_environment), "Environment file \n(string, default=.env)")
+            ("serve_port", boost::program_options::value<uint16_t>(&_configuration->_serve._port), "Serve port \n(number, default=443)")
+            ("serve_directory", boost::program_options::value<std::string>(&_configuration->_serve._directory), "Serve directory \n(string, default=www)");
 
     _configuration->init(program_options);
 
-    dotenv::init(_configuration->_env_file.c_str());
+    dotenv::init(_configuration->_environment.c_str());
 
-    boost::asio::ip::tcp::endpoint serve_endpoint { boost::asio::ip::tcp::v4(), _configuration->_ports._serve };
+    boost::asio::ip::tcp::endpoint serve_endpoint { boost::asio::ip::tcp::v4(), _configuration->_serve._port };
     boost::asio::io_context io_context;
 
     boost::asio::ssl::context secure_context { boost::asio::ssl::context::tlsv12 };
     secure_context.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::single_dh_use);
-    secure_context.use_certificate_chain_file(_configuration->_keys._chained);
-    secure_context.use_private_key_file(_configuration->_keys._private, boost::asio::ssl::context::pem);
-    secure_context.use_tmp_dh_file(_configuration->_keys._dh_params);
+    secure_context.use_certificate_chain_file(_configuration->_rsa._chained_key);
+    secure_context.use_private_key_file(_configuration->_rsa._private_key, boost::asio::ssl::context::pem);
+    secure_context.use_tmp_dh_file(_configuration->_rsa._dh_params);
 
     boost::asio::signal_set signals(io_context, SIGINT, SIGTERM, SIGHUP);
 

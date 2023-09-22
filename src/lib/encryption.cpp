@@ -84,7 +84,7 @@ std::string encryption::show(std::string & input) {
 }
 
 encryption::encryption(std::shared_ptr<configuration> const& config) {
-    FILE * public_key_file = fopen(config->_keys._public.c_str(), "rb");
+    FILE * public_key_file = fopen(config->_rsa._public_key.c_str(), "rb");
     if (!public_key_file) {
         throw PublicKeyNotFoundException();
     }
@@ -94,7 +94,7 @@ encryption::encryption(std::shared_ptr<configuration> const& config) {
         throw PublicKeyInvalidException();
     }
 
-    FILE * private_key_file = fopen(config->_keys._private.c_str(), "rb");
+    FILE * private_key_file = fopen(config->_rsa._private_key.c_str(), "rb");
 
     if (!private_key_file) {
         throw PrivateKeyNotFoundException();
@@ -106,7 +106,7 @@ encryption::encryption(std::shared_ptr<configuration> const& config) {
         throw PrivateKeyInvalidException();
     }
 
-    block_size = (config->_keys._size / 8) - 42;
+    block_size = (config->_rsa._size / 8) - 42;
 }
 
 encryption::~encryption() {

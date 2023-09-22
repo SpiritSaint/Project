@@ -4,39 +4,37 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
-struct keys {
-    std::string _chained = "chained.pem";
-    std::string _public = "public.pem";
-    std::string _private = "private.pem";
+struct rsa {
+    std::string _chained_key = "chained.pem";
+    std::string _public_key = "public.pem";
+    std::string _private_key = "private.pem";
     std::string _dh_params = "dh-params.pem";
-    int _size = 2048;
+    size_t _size = 2048;
 };
 
-struct http {
+struct serve {
+    uint16_t _port = 8080;
     size_t handshake_timeout = 60;
     size_t read_timeout = 60;
     size_t close_timeout = 60;
     std::string server_name = "Project";
-};
-
-struct ports {
-    uint16_t _serve = 443;
+    std::string _directory = "www";
 };
 
 class configuration {
 public:
-    std::string _env_file;
-    keys _keys;
-    ports _ports;
-    http _http;
+    std::string _environment;
+    rsa _rsa;
+    serve _serve;
     void init(boost::program_options::variables_map & options) {
-        if (options.count("public_key")) { _keys._public = options.at("public_key").as<std::string>(); }
-        if (options.count("private_key")) { _keys._private = options.at("private_key").as<std::string>(); }
-        if (options.count("chained_key")) { _keys._chained = options.at("chained_key").as<std::string>(); }
-        if (options.count("key_size")) { _keys._size = options.at("key_size").as<int>(); }
-        if (options.count("dh_params")) { _keys._dh_params = options.at("dh_params").as<std::string>(); }
-        if (options.count("env_file")) { _env_file = options.at("env_file").as<std::string>(); }
-        if (options.count("serve")) { _ports._serve = options.at("serve").as<size_t>(); }
+        if (options.count("encryption_rsa_public_key")) { _rsa._public_key = options.at("encryption_rsa_public_key").as<std::string>(); }
+        if (options.count("encryption_rsa_private_key")) { _rsa._private_key = options.at("encryption_rsa_private_key").as<std::string>(); }
+        if (options.count("encryption_rsa_chained_key")) { _rsa._chained_key = options.at("encryption_rsa_chained_key").as<std::string>(); }
+        if (options.count("encryption_rsa_dh_params")) { _rsa._dh_params = options.at("encryption_rsa_dh_params").as<std::string>(); }
+        if (options.count("encryption_rsa_size")) { _rsa._size = options.at("encryption_rsa_size").as<size_t>(); }
+        if (options.count("environment")) { _environment = options.at("environment").as<std::string>(); }
+        if (options.count("serve_port")) { _serve._port = options.at("serve_port").as<size_t>(); }
+        if (options.count("serve_directory")) { _serve._directory = options.at("serve_directory").as<std::string>(); }
     }
 };
 
