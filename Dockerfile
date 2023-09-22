@@ -9,7 +9,7 @@ RUN mkdir build && \
     cd build && \
     make && \
     openssl dhparam -out dh-params.pem 4096 && \
-    openssl req -newkey rsa:2048 -nodes -keyout private.pem -x509 -days 365 -out public.pem -subj "/C=CL/ST=Santiago/L=Santiago/O=Ian Torres/OU=Project Authority/CN=project.local"
+    openssl req -newkey rsa:4096 -nodes -keyout private.pem -x509 -days 365 -out public.pem -subj "/C=CL/ST=Santiago/L=Santiago/O=Ian Torres/OU=Project Authority/CN=project.local"
 
 WORKDIR /src/build
 RUN ./test
