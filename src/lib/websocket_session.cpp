@@ -56,7 +56,7 @@ void websocket_session::run(boost::beast::http::request<boost::beast::http::stri
     boost::beast::get_lowest_layer(_stream).expires_never();
     _stream.set_option(boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::server));
     _stream.set_option(boost::beast::websocket::stream_base::decorator([self = shared_from_this()] (boost::beast::websocket::response_type & res) {
-        res.set(boost::beast::http::field::server, self->_state->_config->_serve.server_name.c_str());
+        res.set(boost::beast::http::field::server, self->_state->_config->_serve._server_name.c_str());
     }));
     _stream.async_accept(req, std::bind(& websocket_session::on_accept, shared_from_this(), std::placeholders::_1));
 }
