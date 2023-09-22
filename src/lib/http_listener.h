@@ -1,18 +1,8 @@
 #ifndef HTTP_LISTENER_H
 #define HTTP_LISTENER_H
 
-#include <iostream>
-#include <memory>
-#include <utility>
-
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/ssl.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/asio/ssl/stream.hpp>
-
+#include "../ext/boost.h"
+#include "../ext/std.h"
 #include "http_session.h"
 
 class state;

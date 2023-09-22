@@ -6,6 +6,14 @@
 
 This repository contains a generic C++ project that can be used as a basis guide on application developments that require authentication and use of TCP/UDP and Websockets communication. 
 
+## Instructions
+
+### Encryption keys
+
+```shell
+openssl req -new -newkey rsa:1024 -nodes -out ca.csr -keyout ca.key -subj "/C=CL/ST=Santiago/L=Santiago/O=Project/OU=Project/CN=project.local"
+```
+
 ## Rules ⚡
 
 - Attributes must be declared using dash prefix.

@@ -1,9 +1,26 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(app)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(LIBRARIES Boost::headers Boost::json Boost::program_options Threads::Threads OpenSSL::Crypto OpenSSL::SSL)
-set(SOURCE ext/mysql.cpp ext/dotenv.h lib/exceptions.h lib/configuration.h lib/encryption.cpp lib/encryption.h)
+set(SOURCE
+        ext/mysql.cpp
+        ext/dotenv.h
+        ext/boost.h
+        ext/std.h
+        lib/state.h
+        lib/exceptions.h
+        lib/configuration.h
+        lib/encryption.cpp
+        lib/encryption.h
+        lib/http_listener.cpp
+        lib/http_listener.h
+        lib/http_session.cpp
+        lib/http_session.h
+        lib/websocket_session.cpp
+        lib/websocket_session.h
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread" )
 
 find_package(Boost 1.83.0 REQUIRED COMPONENTS headers thread program_options json)
 find_package(Threads REQUIRED)
