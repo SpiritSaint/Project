@@ -21,6 +21,7 @@ TEST_CASE( "Encryption", "[encryption]" ) {
 
     config->_keys._public = "public.pem";
     config->_keys._private = "private.pem";
+    config->_keys._size = 2048;
 
     auto encryptor = new encryption(config);
 
@@ -32,11 +33,16 @@ TEST_CASE( "Encryption", "[encryption]" ) {
     std::string case_2_encrypted = encryptor->hide(case_2);
     std::string case_2_decrypted = encryptor->show(case_2_encrypted);
 
-    std::string case_3 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt leo sit amet fermentum commodo. Vestibulum interdum, quam eu ullamcorper ornare, nisi sem porttitor nibh, eu pulvinar lorem dolor et justo. Nulla pellentesque nisi in est convallis aliquam. Praesent consequat neque in dolor fringilla sagittis. Nam ac pharetra enim. Proin pharetra lacinia ligula non commodo. Maecenas tincidunt nec odio id sagittis.";
+    std::string case_3 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris utah aliquip consequat.";
     std::string case_3_encrypted = encryptor->hide(case_3);
     std::string case_3_decrypted = encryptor->show(case_3_encrypted);
+
+    std::string case_4 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam tempus ornare faucibus. Etiam ac facilisis tortor, eu porttitor arcu. Ut eget imperdiet purus, et consectetur nisl. Fusce viverra dignissim purus, vitae facilisis dolor aliquet in. Ut eget tellus felis. Phasellus fringilla scelerisque risus, rutrum condimentum turpis vulputate ut. Ut dignissim eget libero et convallis. Donec porttitor non mi at gravida. Nullam pharetra ipsum nec auctor sagittis. Sed ultrices fermentum mauris vitae commodo biam.";
+    std::string case_4_encrypted = encryptor->hide(case_4);
+    std::string case_4_decrypted = encryptor->show(case_4_encrypted);
 
     REQUIRE( case_1_decrypted == case_1 );
     REQUIRE( case_2_decrypted == case_2 );
     REQUIRE( case_3_decrypted == case_3 );
+    REQUIRE( case_4_decrypted == case_4 );
 }
