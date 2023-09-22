@@ -12,11 +12,8 @@ std::string encryption::hide(std::string & input) {
         blocks.push_back(input.substr(i, block_size));
     }
 
-    if (EVP_PKEY_encrypt_init(_public_key_context) <= 0 ) {
-        throw EncryptionException();
-    }
-
-    if (EVP_PKEY_CTX_set_rsa_padding(_public_key_context, RSA_PKCS1_OAEP_PADDING) <= 0) {
+    if (EVP_PKEY_encrypt_init(_public_key_context) <= 0 ||
+        EVP_PKEY_CTX_set_rsa_padding(_public_key_context, RSA_PKCS1_OAEP_PADDING) <= 0) {
         throw EncryptionException();
     }
 
@@ -46,11 +43,8 @@ std::string encryption::show(std::string & input) {
         EVP_PKEY_CTX_free(_private_key_context);
     }
 
-    if (EVP_PKEY_decrypt_init(_public_key_context) <= 0 ) {
-        throw DecryptionException();
-    }
-
-    if (EVP_PKEY_CTX_set_rsa_padding(_private_key_context, RSA_PKCS1_OAEP_PADDING) <= 0) {
+    if (EVP_PKEY_decrypt_init(_public_key_context) <= 0 ||
+        EVP_PKEY_CTX_set_rsa_padding(_private_key_context, RSA_PKCS1_OAEP_PADDING) <= 0) {
         throw DecryptionException();
     }
 
@@ -84,18 +78,20 @@ std::string encryption::show(std::string & input) {
 }
 
 encryption::encryption(std::shared_ptr<configuration> const& config) {
+    block_size = (config->_rsa._size / 8) - 42;
+
     FILE * public_key_file = fopen(config->_rsa._public_key.c_str(), "rb");
     if (!public_key_file) {
         throw PublicKeyNotFoundException();
     }
 
     _public_key = PEM_read_PUBKEY(public_key_file, nullptr, nullptr, nullptr);
+    fclose(public_key_file);
     if (!_public_key) {
         throw PublicKeyInvalidException();
     }
 
     FILE * private_key_file = fopen(config->_rsa._private_key.c_str(), "rb");
-
     if (!private_key_file) {
         throw PrivateKeyNotFoundException();
     }
@@ -105,8 +101,6 @@ encryption::encryption(std::shared_ptr<configuration> const& config) {
     if (!_private_key) {
         throw PrivateKeyInvalidException();
     }
-
-    block_size = (config->_rsa._size / 8) - 42;
 }
 
 encryption::~encryption() {
