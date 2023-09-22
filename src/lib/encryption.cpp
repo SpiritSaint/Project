@@ -77,7 +77,7 @@ std::string encryption::show(std::string & input) {
     return result;
 }
 
-encryption::encryption(std::shared_ptr<configuration> const& config) {
+encryption::encryption(std::shared_ptr<configuration> const & config) {
     block_size = (config->_rsa._size / 8) - 42;
 
     FILE * public_key_file = fopen(config->_rsa._public_key.c_str(), "rb");
