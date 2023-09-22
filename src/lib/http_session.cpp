@@ -43,6 +43,12 @@ std::string path_cat(boost::beast::string_view base, boost::beast::string_view p
     return result;
 }
 
+template <class Body, class Allocator>
+void print(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, int result) {
+    std::string separator = " ";
+    std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(req.method()) << " " << req.target() << RESET << separator << BOLD_CYAN << result << RESET << std::endl;
+}
+
 template <class Body, class Allocator> boost::beast::http::message_generator handle_request(
         std::shared_ptr<state> const & state,
         boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>&& req)
@@ -54,6 +60,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.keep_alive(req.keep_alive());
         res.body() = std::string(why);
         res.prepare_payload();
+        print(req, res.result_int());
         return res;
     };
 
@@ -64,6 +71,8 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.keep_alive(req.keep_alive());
         res.body() = "The resource '" + std::string(target) + "' was not found.";
         res.prepare_payload();
+        res.payload_size();
+        print(req, res.result_int());
         return res;
     };
 
@@ -74,14 +83,12 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.keep_alive(req.keep_alive());
         res.body() = "An error occurred: '" + std::string(what) + "'";
         res.prepare_payload();
+        print(req, res.result_int());
         return res;
     };
 
-    if( req.method() != boost::beast::http::verb::get && req.method() != boost::beast::http::verb::head )
-        return bad_request("Unknown HTTP-method");
-
     if( req.target().empty() || req.target()[0] != '/' || req.target().find("..") != boost::beast::string_view::npos )
-        return bad_request("Illegal request-target");
+        return bad_request("Unauthorized");
 
     std::string path = path_cat(state->_config->_serve._directory.c_str(), req.target());
 
@@ -109,6 +116,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
         res.set(boost::beast::http::field::access_control_allow_headers, "*");
         res.content_length(size);
         res.keep_alive(req.keep_alive());
+        print(req, res.result_int());
         return res;
     }
 
@@ -120,6 +128,7 @@ template <class Body, class Allocator> boost::beast::http::message_generator han
     res.set(boost::beast::http::field::access_control_allow_headers, "*");
     res.content_length(size);
     res.keep_alive(req.keep_alive());
+    print(req, res.result_int());
     return res;
 }
 
@@ -134,8 +143,6 @@ void http_session::run() {
 
 void http_session::fail(boost::system::error_code error, char const * what) {
     if(error == boost::beast::net::ssl::error::stream_truncated) return;
-
-    std::cout << "error::http_session: " << what << std::endl;
 }
 
 void http_session::on_read(boost::system::error_code error, std::size_t bytes) {

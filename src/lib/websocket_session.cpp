@@ -7,8 +7,6 @@ websocket_session::~websocket_session() { }
 
 void websocket_session::fail(boost::system::error_code error, char const * what) {
     if ( error == boost::beast::net::error::operation_aborted || error == boost::beast::websocket::error::closed ) { return; }
-
-    std::cout << "error::websocket_session: " << what << std::endl;
 }
 
 void websocket_session::on_accept(boost::system::error_code error) {
@@ -19,12 +17,16 @@ void websocket_session::on_accept(boost::system::error_code error) {
 
 void websocket_session::on_read(boost::system::error_code error, std::size_t bytes) {
     std::string content = boost::beast::buffers_to_string(_buffer.data());
+    _buffer.consume(_buffer.size());
 
     if (error) { return fail(error, "on_read"); }
 
-    _stream.async_read(_buffer, [self = shared_from_this()] (boost::system::error_code error, std::size_t bytes) {
-        self->on_read(error, bytes);
-    });
+    std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
+    std::string separator = " ";
+    std::cout << BOLD_GREEN << "Message" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+    this->send(response);
+
+    _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
 }
 
 void websocket_session::send(std::shared_ptr<std::string const> const& stream) {
