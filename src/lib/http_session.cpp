@@ -43,31 +43,25 @@ std::string path_cat(boost::beast::string_view base, boost::beast::string_view p
     return result;
 }
 
-std::string get_timestamp() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t time = std::chrono::system_clock::to_time_t(now);
-    std::tm * tm = std::gmtime(&time);
-    char timestamp[128];
-    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S %Z", tm);
-    return std::string{ timestamp };
+template <class Body, class Allocator>
+void print(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, int result) {
+    std::string separator = " ";
+    std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(req.method()) << " " << req.target() << RESET << separator << BOLD_CYAN << result << RESET << std::endl;
 }
 
 template <class Body, class Allocator>
 void http_log(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, boost::beast::http::response<boost::beast::http::string_body> res) {
-    std::string separator = " ";
-    std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(req.method()) << " " << req.target() << RESET << separator << BOLD_CYAN << res.result_int() << RESET << std::endl;
+    print(req, res.result_int());
 }
 
 template <class Body, class Allocator>
 void http_log(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, boost::beast::http::response<boost::beast::http::empty_body> res) {
-    std::string separator = " ";
-    std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(req.method()) << " " << req.target() << RESET << separator << BOLD_CYAN << res.result_int() << RESET << std::endl;
+    print(req, res.result_int());
 }
 
 template <class Body, class Allocator>
 void http_log(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& req, boost::beast::http::response<boost::beast::http::file_body> & res) {
-    std::string separator = " ";
-    std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(req.method()) << " " << req.target() << RESET << separator << BOLD_CYAN << res.result_int() << RESET << std::endl;
+    print(req, res.result_int());
 }
 
 template <class Body, class Allocator> boost::beast::http::message_generator handle_request(

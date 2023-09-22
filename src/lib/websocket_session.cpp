@@ -1,14 +1,5 @@
 #include "websocket_session.h"
 
-std::string get_timestamp_() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t time = std::chrono::system_clock::to_time_t(now);
-    std::tm * tm = std::gmtime(&time);
-    char timestamp[128];
-    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S %Z", tm);
-    return std::string{ timestamp };
-}
-
 websocket_session::websocket_session(boost::beast::ssl_stream<boost::beast::tcp_stream> stream, std::shared_ptr<state> const & state) :
     _stream(std::move(stream)), _state(state) { }
 
@@ -32,7 +23,7 @@ void websocket_session::on_read(boost::system::error_code error, std::size_t byt
 
     std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
     std::string separator = " ";
-    std::cout << BOLD_GREEN << "Message" << RESET << separator << GREEN << get_timestamp_() << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+    std::cout << BOLD_GREEN << "Message" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
     this->send(response);
 
     _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
