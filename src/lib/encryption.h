@@ -6,6 +6,7 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 
+#include "../ext/base64.h"
 #include "exceptions.h"
 #include "configuration.h"
 

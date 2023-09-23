@@ -12,7 +12,7 @@ class http_session : public std::enable_shared_from_this<http_session> {
     boost::asio::ip::tcp::socket _socket;
     boost::beast::flat_buffer _buffer;
     std::shared_ptr<state> _state;
-    boost::beast::http::request<boost::beast::http::string_body> _req;
+    boost::beast::http::request<boost::beast::http::string_body> _request;
     boost::asio::ssl::context & _context;
 
     void fail(boost::system::error_code error, char const * what);

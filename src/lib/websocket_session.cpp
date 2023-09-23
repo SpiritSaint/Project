@@ -1,7 +1,6 @@
 #include "websocket_session.h"
 
-websocket_session::websocket_session(boost::beast::ssl_stream<boost::beast::tcp_stream> stream, std::shared_ptr<state> const & state) :
-    _stream(std::move(stream)), _state(state) { }
+websocket_session::websocket_session(boost::beast::ssl_stream<boost::beast::tcp_stream> stream, std::shared_ptr<state> const & state) : _stream(std::move(stream)), _state(state) { }
 
 websocket_session::~websocket_session() { }
 
@@ -10,7 +9,7 @@ void websocket_session::fail(boost::system::error_code error, char const * what)
 }
 
 void websocket_session::on_accept(boost::system::error_code error) {
-    if (error) { return fail(error, "accept"); }
+    if ( error ) { return fail(error, "accept"); }
 
     _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
 }
@@ -41,8 +40,7 @@ void websocket_session::send(std::shared_ptr<std::string const> const& stream) {
 }
 
 void websocket_session::on_write(boost::system::error_code error, std::size_t) {
-    if(error)
-        return fail(error, "write");
+    if (error) return fail(error, "write");
 
     _queue.erase(_queue.begin());
 
@@ -52,11 +50,11 @@ void websocket_session::on_write(boost::system::error_code error, std::size_t) {
         });
 }
 
-void websocket_session::run(boost::beast::http::request<boost::beast::http::string_body> req) {
+void websocket_session::run(boost::beast::http::request<boost::beast::http::string_body> request) {
     boost::beast::get_lowest_layer(_stream).expires_never();
     _stream.set_option(boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::server));
-    _stream.set_option(boost::beast::websocket::stream_base::decorator([self = shared_from_this()] (boost::beast::websocket::response_type & res) {
-        res.set(boost::beast::http::field::server, self->_state->_config->_serve.server_name.c_str());
+    _stream.set_option(boost::beast::websocket::stream_base::decorator([self = shared_from_this()] (boost::beast::websocket::response_type & response) {
+        response.set(boost::beast::http::field::server, self->_state->_config->_serve._server_name.c_str());
     }));
-    _stream.async_accept(req, std::bind(& websocket_session::on_accept, shared_from_this(), std::placeholders::_1));
+    _stream.async_accept(request, std::bind(& websocket_session::on_accept, shared_from_this(), std::placeholders::_1));
 }

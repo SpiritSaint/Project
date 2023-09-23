@@ -14,10 +14,10 @@ struct rsa {
 
 struct serve {
     uint16_t _port = 8080;
-    size_t handshake_timeout = 60;
-    size_t read_timeout = 60;
-    size_t close_timeout = 60;
-    std::string server_name = "Project";
+    size_t _handshake_timeout = 60;
+    size_t _read_timeout = 60;
+    size_t _close_timeout = 60;
+    std::string _server_name = "Project";
     std::string _directory = "www";
 };
 

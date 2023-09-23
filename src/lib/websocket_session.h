@@ -18,8 +18,8 @@ class websocket_session : public std::enable_shared_from_this<websocket_session>
 public:
     websocket_session(boost::beast::ssl_stream<boost::beast::tcp_stream> stream, std::shared_ptr<state> const & state);
     ~websocket_session();
-    void run(boost::beast::http::request<boost::beast::http::string_body> req);
-    void send(std::shared_ptr<std::string const> const & ss);
+    void run(boost::beast::http::request<boost::beast::http::string_body> request);
+    void send(std::shared_ptr<std::string const> const & stream);
 };
 
 
