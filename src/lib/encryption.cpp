@@ -18,7 +18,6 @@ std::string encryption::hide(std::string & input) {
     }
 
     std::string result;
-
     for (const std::string& block : blocks) {
         std::size_t size;
         if (EVP_PKEY_encrypt(_public_key_context, nullptr, &size, reinterpret_cast<const unsigned char *>(block.data()), block.length()) <= 0) {
@@ -29,8 +28,8 @@ std::string encryption::hide(std::string & input) {
         unsigned char output[size];
         EVP_PKEY_encrypt(_public_key_context, output, &size, reinterpret_cast<const unsigned char *>(block.data()), block.length());
 
-        result.append(std::string { reinterpret_cast<char*>(output), size });
-        result.append("<EOL>");
+        result.append(base64::to_base64(std::string { reinterpret_cast<char*>(output), size }));
+        result.append("\n");
     }
     EVP_PKEY_CTX_free(_public_key_context);
 
@@ -38,6 +37,8 @@ std::string encryption::hide(std::string & input) {
 }
 
 std::string encryption::show(std::string & input) {
+    std::string copy = input;
+
     _private_key_context = EVP_PKEY_CTX_new(_private_key, nullptr);
     if (!_private_key_context) {
         EVP_PKEY_CTX_free(_private_key_context);
@@ -48,16 +49,15 @@ std::string encryption::show(std::string & input) {
         throw DecryptionException();
     }
 
-    std::istringstream ss(input);
-
+    std::istringstream ss(copy);
     std::string result;
     std::vector<std::string> blocks;
 
     size_t position = 0;
-    std::string delimiter = "<EOL>";
-    while ((position = input.find(delimiter)) != std::string::npos) {
-        std::string block = input.substr(0, position);
-        input.erase(0, position + delimiter.length());
+    std::string delimiter = "\n";
+    while ((position = copy.find(delimiter)) != std::string::npos) {
+        std::string block = base64::from_base64(copy.substr(0, position));
+        copy.erase(0, position + delimiter.length());
 
         std::size_t size;
 

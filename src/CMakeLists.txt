@@ -19,7 +19,7 @@ set(SOURCE
         lib/http_session.h
         lib/websocket_session.cpp
         lib/websocket_session.h
-)
+        ext/base64.h)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread" )
 
 find_package(Boost 1.83.0 REQUIRED COMPONENTS headers thread program_options json)
