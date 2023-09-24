@@ -2,10 +2,12 @@
 #define STATE_H
 
 #include "configuration.h"
+#include "session.h"
 
 class state {
 public:
     std::shared_ptr<configuration> _config;
+    std::vector<session *> _sessions;
     state(std::shared_ptr<configuration> config) : _config(std::move(config)) {};
     static std::string get_timestamp() {
         auto now = std::chrono::system_clock::now();

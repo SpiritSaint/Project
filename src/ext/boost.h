@@ -34,5 +34,9 @@
 #include <boost/beast/version.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/config.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/json.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 
 #endif // BOOST_H

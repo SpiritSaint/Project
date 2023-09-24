@@ -3,6 +3,7 @@
 
 #include "../ext/boost.h"
 #include "../ext/std.h"
+#include "json.h"
 
 #include "state.h"
 
@@ -11,6 +12,8 @@ class websocket_session : public std::enable_shared_from_this<websocket_session>
     boost::beast::websocket::stream<boost::beast::ssl_stream<boost::beast::tcp_stream>> _stream;
     std::shared_ptr<state> _state;
     std::vector<std::shared_ptr<std::string const>> _queue;
+    session * _session;
+
     void fail(boost::system::error_code error, char const * what);
     void on_accept(boost::system::error_code error);
     void on_read(boost::system::error_code error, std::size_t bytes);

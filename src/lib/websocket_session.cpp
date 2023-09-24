@@ -2,14 +2,33 @@
 
 websocket_session::websocket_session(boost::beast::ssl_stream<boost::beast::tcp_stream> stream, std::shared_ptr<state> const & state) : _stream(std::move(stream)), _state(state) { }
 
-websocket_session::~websocket_session() { }
+websocket_session::~websocket_session() {
+}
 
 void websocket_session::fail(boost::system::error_code error, char const * what) {
+    std::string separator = " ";
+    for (size_t i = 0; i < _state->_sessions.size(); ++i) {
+        if (_state->_sessions[i]->_uuid == _session->_uuid) {
+            _state->_sessions.erase(_state->_sessions.begin() + i);
+            std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "EVT" << RESET << separator << BOLD_BLUE << _session->_ip << ":" << _session->_port <<  RESET << separator << BOLD_CYAN << "Disconnected" << RESET << std::endl;
+            break;
+        }
+    }
+
     if ( error == boost::beast::net::error::operation_aborted || error == boost::beast::websocket::error::closed ) { return; }
 }
 
 void websocket_session::on_accept(boost::system::error_code error) {
     if ( error ) { return fail(error, "accept"); }
+
+    auto remote_endpoint = boost::beast::get_lowest_layer(_stream).socket().remote_endpoint();
+    _session = new session;
+    _session->_ip = remote_endpoint.address().to_string();
+    _session->_port = remote_endpoint.port();
+    _state->_sessions.push_back(_session);
+
+    std::string separator = " ";
+    std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "EVT" << RESET << separator << BOLD_BLUE << _session->_ip << ":" << _session->_port <<  RESET << separator << BOLD_CYAN << "Connected" << RESET << std::endl;
 
     _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
 }
@@ -20,10 +39,18 @@ void websocket_session::on_read(boost::system::error_code error, std::size_t byt
 
     if (error) { return fail(error, "on_read"); }
 
-    std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
-    std::string separator = " ";
-    std::cout << BOLD_GREEN << "Message" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
-    this->send(response);
+    if (json_validator::check(content)) {
+        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
+        std::string separator = " ";
+        this->send(response);
+        std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+    } else {
+        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("500");
+        std::string separator = " ";
+        this->send(response);
+        std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+    }
+
 
     _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
 }

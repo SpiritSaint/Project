@@ -44,7 +44,7 @@ std::string path_cat(boost::beast::string_view base, boost::beast::string_view p
 template <class Body, class Allocator>
 void print(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>& request, int status_code) {
     std::string separator = " ";
-    std::cout << BOLD_GREEN << "Request" << RESET << separator << GREEN << state::get_timestamp() << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(request.method()) << " " << request.target() << RESET << separator << BOLD_CYAN << status_code << RESET << std::endl;
+    std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "REQ" << RESET << separator << BOLD_BLUE << boost::beast::http::to_string(request.method()) << " " << request.target() << RESET << separator << BOLD_CYAN << status_code << RESET << std::endl;
 }
 
 template <class Body, class Allocator> boost::beast::http::message_generator handle_request(std::shared_ptr<state> const & state, boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>&& request) {
