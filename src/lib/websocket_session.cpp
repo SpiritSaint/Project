@@ -6,15 +6,7 @@ websocket_session::~websocket_session() {
 }
 
 void websocket_session::fail(boost::system::error_code error, char const * what) {
-    std::string separator = " ";
-    for (size_t i = 0; i < _state->_sessions.size(); ++i) {
-        if (_state->_sessions[i]->_uuid == _session->_uuid) {
-            _state->_sessions.erase(_state->_sessions.begin() + i);
-            std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "EVT" << RESET << separator << BOLD_BLUE << _session->_ip << ":" << _session->_port <<  RESET << separator << BOLD_CYAN << "Disconnected" << RESET << std::endl;
-            break;
-        }
-    }
-
+    _state->mark_as_disconnected(_session);
     if ( error == boost::beast::net::error::operation_aborted || error == boost::beast::websocket::error::closed ) { return; }
 }
 
@@ -25,12 +17,14 @@ void websocket_session::on_accept(boost::system::error_code error) {
     _session = new session;
     _session->_ip = remote_endpoint.address().to_string();
     _session->_port = remote_endpoint.port();
-    _state->_sessions.push_back(_session);
 
-    std::string separator = " ";
-    std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "EVT" << RESET << separator << BOLD_BLUE << _session->_ip << ":" << _session->_port <<  RESET << separator << BOLD_CYAN << "Connected" << RESET << std::endl;
-
-    _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
+    if (_state->create(_session)) {
+        std::string separator = " ";
+        std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "EVT" << RESET << separator << BOLD_BLUE << _session->_ip << ":" << _session->_port <<  RESET << separator << BOLD_CYAN << "Connected" << RESET << std::endl;
+        _stream.async_read(_buffer, boost::beast::bind_front_handler(& websocket_session::on_read, shared_from_this()));
+    } else {
+        return fail(error, "accept_database");
+    }
 }
 
 void websocket_session::on_read(boost::system::error_code error, std::size_t bytes) {
