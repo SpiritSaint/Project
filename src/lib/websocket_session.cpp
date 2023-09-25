@@ -47,18 +47,24 @@ void websocket_session::on_read(boost::system::error_code error, std::size_t byt
             boost::json::object body { object.at("body").as_object() };
 
             if (type == "broadcast" && body.contains("message") && body.at("message").is_string()) {
-                std::string message { body.at("message").as_string() };
-                _state->send(message);
-                std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
-                this->send(response);
-                std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+                if (body.contains("message") && body.at("message").is_string()) {
+                    std::string message { body.at("message").as_string() };
+                    _state->send(message);
+                    std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
+                    this->send(response);
+                    std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+                } else {
+                    std::shared_ptr<const std::string> response = std::make_shared<const std::string>("422:{\"rules\":[\"body.message is required\", \"body.message must be an string\"]}");
+                    this->send(response);
+                    std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
+                }
             } else {
-                std::shared_ptr<const std::string> response = std::make_shared<const std::string>("501");
+                std::shared_ptr<const std::string> response = std::make_shared<const std::string>("501:{\"details\":\"not implemented\"}");
                 this->send(response);
                 std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
             }
         } else {
-            std::shared_ptr<const std::string> response = std::make_shared<const std::string>("422");
+            std::shared_ptr<const std::string> response = std::make_shared<const std::string>("422:{\"rules\":[\"type is required\", \"body is required\", \"body must be an object\"]}");
             this->send(response);
             std::cout << GREEN << state::get_timestamp() << RESET << separator << BOLD_GREEN << "MSG" << RESET << separator << BOLD_BLUE << content << RESET << separator << BOLD_CYAN << *response << RESET << std::endl;
         }
