@@ -39,4 +39,14 @@
 #include <boost/json.hpp>
 #include <boost/json/basic_parser_impl.hpp>
 
+#include <boost/mysql/error_with_diagnostics.hpp>
+#include <boost/mysql/handshake_params.hpp>
+#include <boost/mysql/results.hpp>
+#include <boost/mysql/tcp_ssl.hpp>
+
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/system/system_error.hpp>
+
 #endif // BOOST_H
