@@ -8,6 +8,7 @@ set(SOURCE
         ext/dotenv.h
         ext/boost.h
         ext/std.h
+        lib/state.cpp
         lib/state.h
         lib/exceptions.h
         lib/configuration.h
@@ -20,8 +21,6 @@ set(SOURCE
         lib/websocket_session.cpp
         lib/websocket_session.h
         ext/base64.h
-        lib/session.cpp
-        lib/session.h
         lib/json.cpp
         lib/json.h)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread" )
