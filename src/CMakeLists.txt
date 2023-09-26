@@ -22,7 +22,12 @@ set(SOURCE
         lib/websocket_session.h
         ext/base64.h
         lib/json.cpp
-        lib/json.h)
+        lib/json.h
+        ext/bcrypt.cpp
+        ext/bcrypt.h
+        ext/blowfish.cpp
+        ext/blowfish.h
+)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread" )
 
 find_package(Boost 1.83.0 REQUIRED COMPONENTS headers thread program_options json)
@@ -41,7 +46,7 @@ FetchContent_MakeAvailable(Catch2)
 file(GLOB_RECURSE BEAST_FILES ${Boost_INCLUDE_DIRS}/boost/beast/*.hpp ${Boost_INCLUDE_DIRS}/boost/beast/*.ipp)
 source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_FILES})
 
-add_executable(app ${SOURCE} ${BEAST_FILES} main.cpp)
+add_executable(app ${SOURCE} ${BEAST_FILES} main.cpp ext/openbsd.h)
 target_link_libraries(app PRIVATE ${LIBRARIES})
 target_compile_definitions(app PRIVATE BOOST_MYSQL_SEPARATE_COMPILATION)
 

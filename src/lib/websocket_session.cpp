@@ -51,7 +51,7 @@ void websocket_session::on_read(boost::system::error_code error, std::size_t byt
             std::string type { object.at("type").as_string() };
             boost::json::object body { object.at("body").as_object() };
 
-            if (type == "broadcast" && body.contains("message") && body.at("message").is_string()) {
+            if (type == "broadcast") {
                 if (body.contains("message") && body.at("message").is_string()) {
                     std::string message { body.at("message").as_string() };
                     _state->send(message, this);
@@ -60,6 +60,65 @@ void websocket_session::on_read(boost::system::error_code error, std::size_t byt
                     this->print(content, response->c_str());
                 } else {
                     std::shared_ptr<const std::string> response = std::make_shared<const std::string>("422:{\"rules\":[\"body.message is required\",\"body.message must be an string\"]}");
+                    this->send(response);
+                    this->print(content, response->c_str());
+                }
+            } else if (type == "register") {
+                if (body.contains("name") && body.at("name").is_string() && body.contains("email") && body.at("email").is_string() && body.contains("password") && body.at("password").is_string()) {
+                    std::string name { body.at("name").as_string() };
+                    std::string email { body.at("email").as_string() };
+                    std::string password { body.at("password").as_string() };
+                    auto availability = _state->email_availability(email);
+                    if (availability == 0) {
+                        _state->do_register(name, email, password);
+                        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
+                        this->send(response);
+                        this->print(content, response->c_str());
+                    } else if (availability == -1) {
+                        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("501:{\"details\":\"service unavailable\"}");
+                        this->send(response);
+                        this->print(content, response->c_str());
+                    } else {
+                        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("501:{\"details\":\"email registered\"}");
+                        this->send(response);
+                        this->print(content, response->c_str());
+                    }
+                } else {
+                    std::shared_ptr<const std::string> response = std::make_shared<const std::string>("422:{\"rules\":[\"body.name is required\",\"body.name must be an string\",\"body.email is required\",\"body.email must be an string\",\"body.password is required\",\"body.password must be an string\"]}");
+                    this->send(response);
+                    this->print(content, response->c_str());
+                }
+            } else if (type == "auth") {
+                if (body.contains("email") && body.at("email").is_string() && body.contains("password") && body.at("password").is_string()) {
+                    std::string email { body.at("email").as_string() };
+                    std::string password { body.at("password").as_string() };
+                    auto availability = _state->email_availability(email);
+                    if (availability == 1) {
+                        std::string uuid = _state->do_authentication(email, password);
+                        if (uuid == "E_PASSWORD") {
+                            std::shared_ptr<const std::string> response = std::make_shared<const std::string>("500:{\"details\":\"password incorrect\"}");
+                            this->send(response);
+                            this->print(content, response->c_str());
+                        } else if (uuid == "E_SERVICE") {
+                            std::shared_ptr<const std::string> response = std::make_shared<const std::string>("500:{\"details\":\"service unavailable\"}");
+                            this->send(response);
+                            this->print(content, response->c_str());
+                        } else {
+                            std::shared_ptr<const std::string> response = std::make_shared<const std::string>("200");
+                            this->send(response);
+                            this->print(content, response->c_str());
+                        }
+                    } else if (availability == -1) {
+                        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("500:{\"details\":\"service unavailable\"}");
+                        this->send(response);
+                        this->print(content, response->c_str());
+                    } else {
+                        std::shared_ptr<const std::string> response = std::make_shared<const std::string>("500:{\"details\":\"email not found\"}");
+                        this->send(response);
+                        this->print(content, response->c_str());
+                    }
+                } else {
+                    std::shared_ptr<const std::string> response = std::make_shared<const std::string>("422:{\"rules\":[\"body.email is required\",\"body.email must be an string\",\"body.password is required\",\"body.password must be an string\"]}");
                     this->send(response);
                     this->print(content, response->c_str());
                 }

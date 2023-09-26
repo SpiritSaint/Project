@@ -54,3 +54,61 @@ void state::send(std::string message, websocket_session * session) {
     for(auto session : _sessions)
         session->send(ss);
 }
+
+int state::email_availability(std::string & email) {
+    try {
+        boost::mysql::statement stmt = _connection
+                .prepare_statement("SELECT email FROM users WHERE email = ?");
+
+        boost::mysql::results result;
+        _connection.execute(stmt.bind(email), result);
+        return result.rows().size();
+    }
+    catch (const boost::mysql::error_with_diagnostics & error)
+    {
+        std::cout << "Operation failed with error code: " << error.code() << '\n'
+                  << "Server diagnostics: " << error.get_diagnostics().server_message() << std::endl;
+        return -1;
+    }
+}
+
+bool state::do_register(std::string &name, std::string &email, std::string &password) {
+    try {
+        auto uuid = boost::uuids::random_generator()();
+
+        boost::mysql::statement stmt = _connection
+                .prepare_statement("INSERT INTO users (uuid, name, email, password) VALUES (?, ?, ?, ?)");
+
+        boost::mysql::results result;
+        _connection.execute(stmt.bind(boost::lexical_cast<std::string>(uuid), name, email, bcrypt::generateHash(password)), result);
+        return true;
+    }
+    catch (const boost::mysql::error_with_diagnostics & error)
+    {
+        std::cout << "Operation failed with error code: " << error.code() << '\n'
+                  << "Server diagnostics: " << error.get_diagnostics().server_message() << std::endl;
+        return false;
+    }
+}
+
+std::string state::do_authentication(std::string &email, std::string &password) {
+    try {
+        boost::mysql::statement stmt = _connection
+                .prepare_statement("SELECT uuid, email, password FROM users WHERE email = ?");
+        boost::mysql::results result;
+        _connection.execute(stmt.bind(email), result);
+        auto row = result.rows().at(0);
+        std::string hash = row.at(2).as_string();
+        if (bcrypt::validatePassword(password, hash)) {
+            return row.at(0).as_string();
+        } else {
+            return std::string {"E_PASSWORD"};
+        }
+    }
+    catch (const boost::mysql::error_with_diagnostics & error)
+    {
+        std::cout << "Operation failed with error code: " << error.code() << '\n'
+                  << "Server diagnostics: " << error.get_diagnostics().server_message() << std::endl;
+        return std::string {"E_SERVICE"};
+    }
+}
