@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include "configuration.h"
+#include "../ext/bcrypt.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -23,6 +24,9 @@ public:
     }
     bool create(websocket_session * session);
     void mark_as_disconnected(websocket_session * session);
+    int email_availability(std::string & email);
+    bool do_register(std::string & name, std::string & email, std::string & password);
+    std::string do_authentication(std::string & email, std::string & password);
     void send(std::string message, websocket_session * session);
 };
 

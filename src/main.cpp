@@ -5,6 +5,7 @@
 #include "lib/configuration.h"
 #include "lib/http_listener.h"
 #include "lib/state.h"
+#include "ext/bcrypt.h"
 
 int main(int argc, char *argv[]) {
     auto _configuration = std::make_shared<configuration>();
