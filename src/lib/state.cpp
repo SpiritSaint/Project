@@ -45,8 +45,12 @@ void state::mark_as_disconnected(websocket_session *session) {
     }
 }
 
-void state::send(std::string message) {
-    auto const ss = std::make_shared<std::string const>(std::move(message));
+void state::send(std::string message, websocket_session * session) {
+    boost::json::object event({{"type","broadcast"},{"body",{{"message",message},{"from",boost::lexical_cast<std::string>(session->_uuid)}}}});
+    std::string stream { boost::json::serialize(event) };
+    auto const ss = std::make_shared<std::string const>(std::move(stream));
+
+
     for(auto session : _sessions)
         session->send(ss);
 }

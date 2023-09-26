@@ -23,7 +23,7 @@ public:
     }
     bool create(websocket_session * session);
     void mark_as_disconnected(websocket_session * session);
-    void send(std::string message);
+    void send(std::string message, websocket_session * session);
 };
 
 #endif // STATE_H

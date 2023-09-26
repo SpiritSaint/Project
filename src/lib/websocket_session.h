@@ -26,6 +26,7 @@ public:
     ~websocket_session();
     void run(boost::beast::http::request<boost::beast::http::string_body> request);
     void send(std::shared_ptr<std::string const> const & stream);
+    void print(std::string & message, std::string response);
 };
 
 
